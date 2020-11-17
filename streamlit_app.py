@@ -10,14 +10,10 @@ import torch.nn as nn
 import streamlit as st
 import urllib
 import re
+import pickle
 import nltk
-nltk.download('punkt')
-nltk.download('stopwords')
-from nltk.corpus import stopwords
-
-REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@,;#]')
-BAD_SYMBOLS_RE = re.compile('[^0-9a-z #+_]')
-STOPWORDS = set(stopwords.words('english'))
+import warnings
+warnings.filterwarnings("ignore")
 
 
 class InferSent(nn.Module):
@@ -86,40 +82,14 @@ class InferSent(nn.Module):
             if emb.ndimension() == 3:
                 emb = emb.squeeze(0)
                 assert emb.ndimension() == 2
-
         return emb
 
     def set_w2v_path(self, w2v_path):
         self.w2v_path = w2v_path
 
-    def get_word_dict(self, sentences, tokenize=True):
-        # create vocab of words
-        word_dict = {}
-        sentences = [s.split() if not tokenize else self.tokenize(s) for s in sentences]
-        for sent in sentences:
-            for word in sent:
-                if word not in word_dict:
-                    word_dict[word] = ''
-        word_dict[self.bos] = ''
-        word_dict[self.eos] = ''
-        return word_dict
-
-    def get_w2v(self, word_dict):
-        assert hasattr(self, 'w2v_path'), 'w2v path not set'
-        # create word_vec with w2v vectors
-        word_vec = {}
-        f = urllib.request.urlopen(self.w2v_path)
-        # with open(self.w2v_path, encoding='utf-8') as f:
-        for line in f:
-            line = line.decode("utf-8")
-            word, vec = line.split(' ', 1)
-            if word in word_dict:
-                word_vec[word] = np.fromstring(vec, sep=' ')
-        f.close()
-        print('Found %s(/%s) words with w2v vectors' % (len(word_vec), len(word_dict)))
-        if self.eos not in word_vec:
-            word_vec[self.eos] = np.mean(np.stack(word_vec.values(), axis=0), axis=0)
-        return word_vec
+    def load_w2v(self, w2v_path):
+        with open(w2v_path, 'rb') as f:
+            self.word_vec = pickle.load(f)
 
     def get_w2v_k(self, K):
         assert hasattr(self, 'w2v_path'), 'w2v path not set'
@@ -127,51 +97,31 @@ class InferSent(nn.Module):
         k = 0
         word_vec = {}
         f = urllib.request.urlopen(self.w2v_path)
-        # with open(self.w2v_path, encoding='utf-8') as f:
+
+        # tic = time.time()
+        # toc = time.time()
+        # st.write(str(toc - tic))
         for line in f:
             line = line.decode("utf-8")
             word, vec = line.split(' ', 1)
             if k <= K:
                 word_vec[word] = np.fromstring(vec, sep=' ')
                 k += 1
-            if k > K:
-                if word in [self.bos, self.eos]:
-                    word_vec[word] = np.fromstring(vec, sep=' ')
-
-            if k > K and all([w in word_vec for w in [self.bos, self.eos]]):
+            else:
                 break
-            f.close()
+        f.close()
         if self.eos not in word_vec:
             word_vec[self.eos] = np.mean(np.stack(word_vec.values(), axis=0), axis=0)
+        if self.bos not in word_vec:
+            word_vec[self.bos] = np.mean(np.stack(word_vec.values(), axis=0), axis=0)
+        with open('glove.pickle', 'wb') as f:
+            pickle.dump(word_vec, f, protocol=pickle.HIGHEST_PROTOCOL)
         return word_vec
-
-    def build_vocab(self, sentences, tokenize=True):
-        assert hasattr(self, 'w2v_path'), 'w2v path not set'
-        word_dict = self.get_word_dict(sentences, tokenize)
-        self.word_vec = self.get_w2v(word_dict)
-        print('Vocab size : %s' % (len(self.word_vec)))
 
     # build w2v vocab with k most frequent words
     def build_vocab_k_words(self, K):
         assert hasattr(self, 'w2v_path'), 'w2v path not set'
         self.word_vec = self.get_w2v_k(K)
-
-    def update_vocab(self, sentences, tokenize=True):
-        assert hasattr(self, 'w2v_path'), 'warning : w2v path not set'
-        assert hasattr(self, 'word_vec'), 'build_vocab before updating it'
-        word_dict = self.get_word_dict(sentences, tokenize)
-
-        # keep only new words
-        for word in self.word_vec:
-            if word in word_dict:
-                del word_dict[word]
-
-        # udpate vocabulary
-        if word_dict:
-            new_word_vec = self.get_w2v(word_dict)
-            self.word_vec.update(new_word_vec)
-        else:
-            new_word_vec = []
 
     def get_batch(self, batch):
         # sent in batch in decreasing order of lengths
@@ -181,7 +131,6 @@ class InferSent(nn.Module):
         for i in range(len(batch)):
             for j in range(len(batch[i])):
                 embed[j, i, :] = self.word_vec[batch[i][j]]
-
         return torch.FloatTensor(embed)
 
     def tokenize(self, s):
@@ -242,16 +191,16 @@ def build_nli_net():
   params_model = {'bsize': 64, 'word_emb_dim': 300, 'enc_lstm_dim': 2048,
                   'pool_type': 'max', 'dpout_model': 0.0, 'version': 2}
   infersent = InferSent(params_model)
-  # infersent.load_state_dict(torch.load(MODEL_PATH))
   infersent.load_state_dict(torch.hub.load_state_dict_from_url(MODEL_PATH))
   return infersent
 
 def text_prepare(text):
-    # text = str(text)
+    REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@,;#]')
+    BAD_SYMBOLS_RE = re.compile('[^0-9a-z #+_]')
+    text = str(text)
     text = text.lower() # lowercase text
-    # text = re.sub(REPLACE_BY_SPACE_RE, " ", text) # replace REPLACE_BY_SPACE_RE symbols by space in text
+    text = re.sub(REPLACE_BY_SPACE_RE, " ", text) # replace REPLACE_BY_SPACE_RE symbols by space in text
     text = re.sub(BAD_SYMBOLS_RE, "", text)      # delete symbols which are in BAD_SYMBOLS_RE from text
-    # text = " ".join([word for word in text.split(" ") if word not in STOPWORDS]) # delete stopwords from text
     text = re.sub(' +', ' ', text)
     return text
 
@@ -263,8 +212,12 @@ def cosine(u, v):
 
 # Inference
 infersent = build_nli_net()
-infersent.set_w2v_path("https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/glove.6B.300d.txt")
-infersent.build_vocab_k_words(K=3000000)
+infersent.load_w2v("glove.pickle")
+# infersent.set_w2v_path("https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/glove.6B.300d.txt")
+# infersent.build_vocab_k_words(K=75000)
+
+
+
 
 # Dashboard
 st.write("NOT FINAL SUBMISSION | SHARING PIPELINE TEST ONLY")
