@@ -196,9 +196,10 @@ def text_prepare(text):
     REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@,;#]')
     BAD_SYMBOLS_RE = re.compile('[^0-9a-z #+_]')
     text = str(text)
-    text = text.lower() # lowercase text
-    text = re.sub(REPLACE_BY_SPACE_RE, " ", text) # replace REPLACE_BY_SPACE_RE symbols by space in text
-    text = re.sub(BAD_SYMBOLS_RE, "", text)      # delete symbols which are in BAD_SYMBOLS_RE from text
+    text = " ".join([word for word in text.split(" ") if re.search('[a-zA-Z]', word)])
+    text = text.lower()
+    # text = re.sub(REPLACE_BY_SPACE_RE, " ", text)
+    # text = re.sub(BAD_SYMBOLS_RE, "", text)
     text = re.sub(' +', ' ', text)
     return text
 
@@ -215,14 +216,12 @@ infersent.load_w2v("https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/glove.pickl
 # infersent.build_vocab_k_words(K=75000)
 
 
-
-
 # Dashboard
 st.write("NOT FINAL SUBMISSION | SHARING PIPELINE TEST ONLY")
 # Very very simple tweet scoring example
 tweet_1 = "Since the start of the pandemic, a total 65 WHO staff stationed in Geneva - working from home and onsite - have tested positive for #COVID19. We have not yet established whether any transmission has occurred on campus, but are looking into the matter."
 tweet_2 = "WHO staff who were confirmed positive with #COVID19 in Geneva have received the necessary medical attention. WHO carried out full contact tracing and related protocols. Enhanced cleaning protocols were implemented in relevant offices."
-tweet_3 = "It's what makes human spaceflight so fun and challenging...it's that you always have to realize that you're maintaining human safety in a tough environment on what it means to have more crew members on orbit"
+tweet_3 = "Any tweets only my own views. More Guns,Less Crime (Univ Chicago Press, 3rd ed);10 books, 100+academic articles. PhD Econ, Advisor for Research & Science #USDOJ"
 st.write("Premise tweet\n")
 st.write(tweet_1)
 st.write("Hypothesis tweet 1\n")
