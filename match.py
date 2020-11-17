@@ -229,15 +229,16 @@ class InferSent(nn.Module):
 
 
 def build_nli_net():
-  MODEL_PATH = 'infersent2.pkl'
+  MODEL_PATH = 'https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/infersent2.pkl'
   params_model = {'bsize': 64, 'word_emb_dim': 300, 'enc_lstm_dim': 2048,
                   'pool_type': 'max', 'dpout_model': 0.0, 'version': 2}
   infersent = InferSent(params_model)
-  infersent.load_state_dict(torch.load(MODEL_PATH))
+  # infersent.load_state_dict(torch.load(MODEL_PATH))
+  infersent.load_state_dict(torch.hub.load_state_dict_from_url(MODEL_PATH))
   return infersent
 
 infersent = build_nli_net()
-infersent.set_w2v_path("crawl-300d-2M.vec")
+infersent.set_w2v_path("glove.6B.300d.txt")
 infersent.build_vocab_k_words(K=10000)
 
 
@@ -248,4 +249,4 @@ def cosine(u, v):
   # u and v are matrices!
     return np.einsum('ij,ij->i', u, v) / ((np.linalg.norm(u, axis=1) * np.linalg.norm(v, axis=1)))
 
-st.write(cosine(infersent.encode(['the cat eats.']), infersent.encode(['the cat is hungry.'])).tolist())
+st.write(cosine(infersent.encode(['the cat wants food']), infersent.encode(['the cat is hungry.'])).tolist())
