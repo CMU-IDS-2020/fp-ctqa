@@ -88,8 +88,9 @@ class InferSent(nn.Module):
         self.w2v_path = w2v_path
 
     def load_w2v(self, w2v_path):
-        with open(w2v_path, 'rb') as f:
-            self.word_vec = pickle.load(f)
+        f = urllib.request.urlopen(w2v_path)
+        self.word_vec = pickle.load(f)
+        f.close()
 
     def get_w2v_k(self, K):
         assert hasattr(self, 'w2v_path'), 'w2v path not set'
@@ -98,9 +99,6 @@ class InferSent(nn.Module):
         word_vec = {}
         f = urllib.request.urlopen(self.w2v_path)
 
-        # tic = time.time()
-        # toc = time.time()
-        # st.write(str(toc - tic))
         for line in f:
             line = line.decode("utf-8")
             word, vec = line.split(' ', 1)
@@ -212,7 +210,7 @@ def cosine(u, v):
 
 # Inference
 infersent = build_nli_net()
-infersent.load_w2v("glove.pickle")
+infersent.load_w2v("https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/glove.pickle")
 # infersent.set_w2v_path("https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/glove.6B.300d.txt")
 # infersent.build_vocab_k_words(K=75000)
 
