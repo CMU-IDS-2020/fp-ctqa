@@ -232,3 +232,6 @@ st.write("The similarity score between premise and hypoetheis 1 is:")
 st.write(cosine(infersent.encode([text_prepare(tweet_1)]), infersent.encode([text_prepare(tweet_2)])).tolist()[0])
 st.write("The similarity score between premise and hypoetheis 2 is:")
 st.write(cosine(infersent.encode([text_prepare(tweet_1)]), infersent.encode([text_prepare(tweet_3)])).tolist()[0])
+
+# After all tasks
+del infersent.word_vec
