@@ -10,7 +10,17 @@
 
 ## Work distribution
 
-Update towards the end of the project.
+Following TODO correpond to first deliverable
+
+
+ - For sentence encoding/matching part
+ - [x] Locally working example (for pretrained infersent) where vocab and model checkpoint can be downloaded
+ - [ ] Streamlit share working example (for pretrained infersent and five tweets scoring) where vocab and model checkpoint can be downloaded
+ - [ ] From scoring to a matching problem
+ - [ ] Training scripts for fine tuning infersent 
+   - Finished training scripts (needs formatting)
+   - Need to find ways to transform load_weights method since it is different from the pretrained case (may not in this submission)
+   - Replace pretraining code to loading fine-tuned models code
 
 ## Deliverables
 
