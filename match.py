@@ -8,6 +8,7 @@ import time
 import torch
 import torch.nn as nn
 import streamlit as st
+import urllib
 
 
 class InferSent(nn.Module):
@@ -98,11 +99,14 @@ class InferSent(nn.Module):
         assert hasattr(self, 'w2v_path'), 'w2v path not set'
         # create word_vec with w2v vectors
         word_vec = {}
-        with open(self.w2v_path, encoding='utf-8') as f:
-            for line in f:
-                word, vec = line.split(' ', 1)
-                if word in word_dict:
-                    word_vec[word] = np.fromstring(vec, sep=' ')
+        f = urllib.request.urlopen(self.w2v_path)
+        # with open(self.w2v_path, encoding='utf-8') as f:
+        for line in f:
+            line = line.decode("utf-8")
+            word, vec = line.split(' ', 1)
+            if word in word_dict:
+                word_vec[word] = np.fromstring(vec, sep=' ')
+        f.close()
         print('Found %s(/%s) words with w2v vectors' % (len(word_vec), len(word_dict)))
         return word_vec
 
@@ -111,18 +115,21 @@ class InferSent(nn.Module):
         # create word_vec with k first w2v vectors
         k = 0
         word_vec = {}
-        with open(self.w2v_path, encoding='utf-8') as f:
-            for line in f:
-                word, vec = line.split(' ', 1)
-                if k <= K:
+        f = urllib.request.urlopen(self.w2v_path)
+        # with open(self.w2v_path, encoding='utf-8') as f:
+        for line in f:
+            line = line.decode("utf-8")
+            word, vec = line.split(' ', 1)
+            if k <= K:
+                word_vec[word] = np.fromstring(vec, sep=' ')
+                k += 1
+            if k > K:
+                if word in [self.bos, self.eos]:
                     word_vec[word] = np.fromstring(vec, sep=' ')
-                    k += 1
-                if k > K:
-                    if word in [self.bos, self.eos]:
-                        word_vec[word] = np.fromstring(vec, sep=' ')
 
-                if k > K and all([w in word_vec for w in [self.bos, self.eos]]):
-                    break
+            if k > K and all([w in word_vec for w in [self.bos, self.eos]]):
+                break
+            f.close()
         return word_vec
 
     def build_vocab(self, sentences, tokenize=True):
@@ -238,7 +245,7 @@ def build_nli_net():
   return infersent
 
 infersent = build_nli_net()
-infersent.set_w2v_path("glove.6B.300d.txt")
+infersent.set_w2v_path("https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/glove.6B.300d.txt")
 infersent.build_vocab_k_words(K=10000)
 
 
@@ -248,5 +255,7 @@ def cosine(u, v):
   # compute the similarity between two embeddings
   # u and v are matrices!
     return np.einsum('ij,ij->i', u, v) / ((np.linalg.norm(u, axis=1) * np.linalg.norm(v, axis=1)))
+
+# Very very simple tweet match example
 
 st.write(cosine(infersent.encode(['the cat wants food']), infersent.encode(['the cat is hungry.'])).tolist())
