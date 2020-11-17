@@ -9,6 +9,15 @@ import torch
 import torch.nn as nn
 import streamlit as st
 import urllib
+import re
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+
+REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@,;#]')
+BAD_SYMBOLS_RE = re.compile('[^0-9a-z #+_]')
+STOPWORDS = set(stopwords.words('english'))
 
 
 class InferSent(nn.Module):
@@ -108,6 +117,8 @@ class InferSent(nn.Module):
                 word_vec[word] = np.fromstring(vec, sep=' ')
         f.close()
         print('Found %s(/%s) words with w2v vectors' % (len(word_vec), len(word_dict)))
+        if self.eos not in word_vec:
+            word_vec[self.eos] = np.mean(np.stack(word_vec.values(), axis=0), axis=0)
         return word_vec
 
     def get_w2v_k(self, K):
@@ -130,6 +141,8 @@ class InferSent(nn.Module):
             if k > K and all([w in word_vec for w in [self.bos, self.eos]]):
                 break
             f.close()
+        if self.eos not in word_vec:
+            word_vec[self.eos] = np.mean(np.stack(word_vec.values(), axis=0), axis=0)
         return word_vec
 
     def build_vocab(self, sentences, tokenize=True):
@@ -142,7 +155,6 @@ class InferSent(nn.Module):
     def build_vocab_k_words(self, K):
         assert hasattr(self, 'w2v_path'), 'w2v path not set'
         self.word_vec = self.get_w2v_k(K)
-        print('Vocab size : %s' % (K))
 
     def update_vocab(self, sentences, tokenize=True):
         assert hasattr(self, 'w2v_path'), 'warning : w2v path not set'
@@ -160,7 +172,6 @@ class InferSent(nn.Module):
             self.word_vec.update(new_word_vec)
         else:
             new_word_vec = []
-        print('New vocab size : %s (added %s words)'% (len(self.word_vec), len(new_word_vec)))
 
     def get_batch(self, batch):
         # sent in batch in decreasing order of lengths
@@ -199,9 +210,6 @@ class InferSent(nn.Module):
 
         lengths = np.array([len(s) for s in sentences])
         n_wk = np.sum(lengths)
-        if verbose:
-            print('Nb words kept : %s/%s (%.1f%s)' % (
-                        n_wk, n_w, 100.0 * n_wk / n_w, '%'))
 
         # sort by decreasing length
         lengths, idx_sort = np.sort(lengths)[::-1], np.argsort(-lengths)
@@ -227,13 +235,7 @@ class InferSent(nn.Module):
         # unsort
         idx_unsort = np.argsort(idx_sort)
         embeddings = embeddings[idx_unsort]
-
-        if verbose:
-            print('Speed : %.1f sentences/s (%s mode, bsize=%s)' % (
-                    len(embeddings)/(time.time()-tic),
-                    'gpu' if self.is_cuda() else 'cpu', bsize))
         return embeddings
-
 
 def build_nli_net():
   MODEL_PATH = 'https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/infersent2.pkl'
@@ -244,18 +246,39 @@ def build_nli_net():
   infersent.load_state_dict(torch.hub.load_state_dict_from_url(MODEL_PATH))
   return infersent
 
-infersent = build_nli_net()
-infersent.set_w2v_path("https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/glove.6B.300d.txt")
-infersent.build_vocab_k_words(K=10000)
+def text_prepare(text):
+    # text = str(text)
+    text = text.lower() # lowercase text
+    # text = re.sub(REPLACE_BY_SPACE_RE, " ", text) # replace REPLACE_BY_SPACE_RE symbols by space in text
+    text = re.sub(BAD_SYMBOLS_RE, "", text)      # delete symbols which are in BAD_SYMBOLS_RE from text
+    # text = " ".join([word for word in text.split(" ") if word not in STOPWORDS]) # delete stopwords from text
+    text = re.sub(' +', ' ', text)
+    return text
 
-
-
-# Inference
 def cosine(u, v):
   # compute the similarity between two embeddings
   # u and v are matrices!
-    return np.einsum('ij,ij->i', u, v) / ((np.linalg.norm(u, axis=1) * np.linalg.norm(v, axis=1)))
+    result = np.einsum('ij,ij->i', u, v) / ((np.linalg.norm(u, axis=1) * np.linalg.norm(v, axis=1)))
+    return np.log(result) + 1
 
-# Very very simple tweet match example
+# Inference
+infersent = build_nli_net()
+infersent.set_w2v_path("https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/glove.6B.300d.txt")
+infersent.build_vocab_k_words(K=3000000)
 
-st.write(cosine(infersent.encode(['the cat wants food']), infersent.encode(['the cat is hungry.'])).tolist())
+# Dashboard
+st.write("NOT FINAL SUBMISSION | SHARING PIPELINE TEST ONLY")
+# Very very simple tweet scoring example
+tweet_1 = "Since the start of the pandemic, a total 65 WHO staff stationed in Geneva - working from home and onsite - have tested positive for #COVID19. We have not yet established whether any transmission has occurred on campus, but are looking into the matter."
+tweet_2 = "WHO staff who were confirmed positive with #COVID19 in Geneva have received the necessary medical attention. WHO carried out full contact tracing and related protocols. Enhanced cleaning protocols were implemented in relevant offices."
+tweet_3 = "It's what makes human spaceflight so fun and challenging...it's that you always have to realize that you're maintaining human safety in a tough environment on what it means to have more crew members on orbit"
+st.write("Premise tweet\n")
+st.write(tweet_1)
+st.write("Hypothesis tweet 1\n")
+st.write(tweet_2)
+st.write("Hypothesis tweet 2\n")
+st.write(tweet_3)
+st.write("The similarity score between premise and hypoetheis 1 is:")
+st.write(cosine(infersent.encode([text_prepare(tweet_1)]), infersent.encode([text_prepare(tweet_2)])).tolist()[0])
+st.write("The similarity score between premise and hypoetheis 2 is:")
+st.write(cosine(infersent.encode([text_prepare(tweet_1)]), infersent.encode([text_prepare(tweet_3)])).tolist()[0])
