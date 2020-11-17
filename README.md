@@ -17,6 +17,7 @@ Following TODO correpond to first deliverable
  - [x] Locally working example (for pretrained infersent) where vocab and model checkpoint can be downloaded
  - [ ] Streamlit share working example (for pretrained infersent and five tweets scoring) where vocab and model checkpoint can be downloaded
  - [ ] From scoring to a matching problem
+ - [ ] Simple user interface: click on one tweet, select top_n, cosine or nli score (future), etc
  - [ ] Training scripts for fine tuning infersent 
    - Finished training scripts (needs formatting)
    - Need to find ways to transform load_weights method since it is different from the pretrained case (may not in this submission)
