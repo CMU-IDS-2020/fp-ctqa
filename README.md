@@ -8,6 +8,8 @@
   * yuanyua4@andrew.cmu.edu
 * **Track**: Model (one of Narrative, Model, or Interactive Visualization/Application)
 
+CTQA stands for Covid19 Twitter Question Answering
+
 ## Work distribution
 
 Following TODO correpond to first deliverable
