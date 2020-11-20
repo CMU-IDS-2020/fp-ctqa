@@ -18,19 +18,24 @@ warnings.filterwarnings("ignore")
 
 
 id_to_text = {}
+twit = {}
 sample_ids = [1322748291646476288, 1322748291751227397, 1322748291839262723, 1322748292384645120, 1322748296432144385, 1322748297736454144, 1322748298797682690, 1322748301842747392, 1322748304946614273, 1322748305898573825]
+twitch = []
 for n in sample_ids:
     optimal_tweets = []
     for i in range(5):
         # optimal_tweets.append(get_t_value(n, index)) # This can be a function.
         optimal_tweets.append(str(n) + " has its text as number " + str(i+1))
     id_to_text[n] = optimal_tweets
+    curr_tweet = str(n) + " is the best tweet!"
+    twit[curr_tweet] = n
+    twitch.append(curr_tweet)
 metric_choices = [id_to_text[name_id] for name_id in sample_ids]
 
-tweet_option = st.selectbox('Which tweet would you like to get information on?', sample_ids)
+tweet_option = st.selectbox('Which tweet would you like to get information on?', twitch)
 n_opt = st.selectbox('How many similar tweets would you like to retrieve?', (1, 2, 3, 4, 5))
 st.write('Here are the top ' + str(n_opt) + ' tweets similar to this tweet:')
 for i in range(n_opt):
-    st.write(id_to_text[tweet_option][i])
+    st.write(id_to_text[twit[tweet_option]][i])
 # After all tasks
 # del infersent.word_vec
