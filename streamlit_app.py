@@ -18,7 +18,7 @@ import io
 # nltk.download('punkt')
 # import warnings
 # warnings.filterwarnings("ignore")
-
+st.title('Covid-19 Twitter Search')
 def pd_load(inp):
     return pd.read_csv(inp)
 
@@ -34,10 +34,16 @@ all_scores = load_marix('https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/adjace
 tweets = df.text.tolist()
 num_tweets = len(tweets)
 
+st.subheader("Here are some randomly selected most recent tweets about Covid-19")
 for i, tweet in enumerate(tweets[num_tweets - 10: num_tweets - 5]):
     st.write("[{}] ".format(i+1) + tweet)
 
-# st.write(df)
+def get_top_n_idx(A, N):
+    N += 1 # not self
+    col_idx = np.arange(A.shape[0])[:,None]
+    sorted_row_idx = np.argsort(A, axis=1)[:,A.shape[1]-N::]
+    best_scores = A[col_idx,sorted_row_idx]
+    return sorted_row_idx, best_scores
 
 
 sample_ids = [1,2,3,4,5]
@@ -52,8 +58,22 @@ sample_ids = [1,2,3,4,5]
 #     id_to_text[n] = optimal_tweets
 # metric_choices = [id_to_text[name_id] for name_id in sample_ids]
 
-tweet_option = st.selectbox('Which tweet would you like to get information on?', sample_ids)
-n_opt = st.selectbox('How many similar tweets would you like to retrieve?', (1, 2, 3, 4, 5))
-st.write('Here are the top ' + str(n_opt) + ' tweets similar to this tweet:')
-# for i in range(n_opt):
-#     st.write(id_to_text[tweet_option][i])
+st.subheader("Which tweet would you like to get information on?")
+st.write("Please select the tweet id based on the number inside [] above")
+tweet_option = st.selectbox('', sample_ids)
+tweet_option -= 1
+st.subheader("How many similar tweets would you like to retrieve?")
+n_opt = st.slider("", min_value=1, max_value=5, value=3, step=1)
+
+
+sorted_row_idx, best_scores = get_top_n_idx(all_scores[num_tweets - 10: num_tweets - 5], n_opt)
+sorted_row_idx = sorted_row_idx[tweet_option].tolist()[::-1][1:]
+best_scores = best_scores[tweet_option].tolist()[::-1][1:]
+
+
+st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this tweet:')
+
+for tweet_idx, score in zip(sorted_row_idx, best_scores):
+    st.write(tweets[tweet_idx])
+    st.write("with similarity score " + str(score))
+    st.write("\n")
