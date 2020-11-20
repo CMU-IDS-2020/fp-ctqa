@@ -5,37 +5,50 @@
 
 import numpy as np
 import time
-import torch
-import torch.nn as nn
+import pandas as pd
+# import torch
+# import torch.nn as nn
 import streamlit as st
-import urllib
+# import urllib
 import re
 import pickle
-import nltk
-nltk.download('punkt')
-import warnings
-warnings.filterwarnings("ignore")
+# import nltk
+# nltk.download('punkt')
+# import warnings
+# warnings.filterwarnings("ignore")
+
+def pd_load(inp):
+    return pd.read_csv(inp)
+df = pd_load("https://raw.githubusercontent.com/CMU-IDS-2020/fp-ctqa/main/tweets.csv")
+
+with open('adjacency_matrix.npy', 'rb') as f:
+  all_scores = np.load(f)
+
+tweets = df.text.tolist()
+num_tweets = len(tweets)
+
+for i, tweet in enumerate(tweets[num_tweets - 10: num_tweets - 5]):
+    st.write("[{}] ".format(i+1) + tweet)
+
+st.write(df)
 
 
-id_to_text = {}
-twit = {}
-sample_ids = [1322748291646476288, 1322748291751227397, 1322748291839262723, 1322748292384645120, 1322748296432144385, 1322748297736454144, 1322748298797682690, 1322748301842747392, 1322748304946614273, 1322748305898573825]
-twitch = []
-for n in sample_ids:
-    optimal_tweets = []
-    for i in range(5):
-        # optimal_tweets.append(get_t_value(n, index)) # This can be a function.
-        optimal_tweets.append(str(n) + " has its text as number " + str(i+1))
-    id_to_text[n] = optimal_tweets
-    curr_tweet = str(n) + " is the best tweet!"
-    twit[curr_tweet] = n
-    twitch.append(curr_tweet)
-metric_choices = [id_to_text[name_id] for name_id in sample_ids]
+sample_ids = [1,2,3,4,5]
+#
+# id_to_text = {}
+# sample_ids = [1322748291646476288, 1322748291751227397, 1322748291839262723, 1322748292384645120, 1322748296432144385, 1322748297736454144, 1322748298797682690, 1322748301842747392, 1322748304946614273, 1322748305898573825]
+# for n in sample_ids:
+#     optimal_tweets = []
+#     for i in range(5):
+#         # optimal_tweets.append(get_t_value(n, index)) # This can be a function.
+#         optimal_tweets.append(str(n) + " has its text as number " + str(i+1))
+#     id_to_text[n] = optimal_tweets
+# metric_choices = [id_to_text[name_id] for name_id in sample_ids]
 
-tweet_option = st.selectbox('Which tweet would you like to get information on?', twitch)
+tweet_option = st.selectbox('Which tweet would you like to get information on?', sample_ids)
 n_opt = st.selectbox('How many similar tweets would you like to retrieve?', (1, 2, 3, 4, 5))
 st.write('Here are the top ' + str(n_opt) + ' tweets similar to this tweet:')
 for i in range(n_opt):
-    st.write(id_to_text[twit[tweet_option]][i])
+    st.write(id_to_text[tweet_option][i])
 # After all tasks
 # del infersent.word_vec
