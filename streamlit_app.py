@@ -9,9 +9,11 @@ import pandas as pd
 # import torch
 # import torch.nn as nn
 import streamlit as st
-# import urllib
+import urllib
 import re
 import pickle
+import requests
+import io
 # import nltk
 # nltk.download('punkt')
 # import warnings
@@ -19,10 +21,15 @@ import pickle
 
 def pd_load(inp):
     return pd.read_csv(inp)
-df = pd_load("https://raw.githubusercontent.com/CMU-IDS-2020/fp-ctqa/main/tweets.csv")
 
-with open('adjacency_matrix.npy', 'rb') as f:
-  all_scores = np.load(f)
+def load_marix(inp):
+    response = requests.get(inp)
+    response.raise_for_status()
+    all_scores = np.load(io.BytesIO(response.content))
+    return all_scores
+
+df = pd_load("https://raw.githubusercontent.com/CMU-IDS-2020/fp-ctqa/main/tweets.csv")
+all_scores = load_marix('https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/adjacency_matrix.npy')
 
 tweets = df.text.tolist()
 num_tweets = len(tweets)
@@ -30,7 +37,7 @@ num_tweets = len(tweets)
 for i, tweet in enumerate(tweets[num_tweets - 10: num_tweets - 5]):
     st.write("[{}] ".format(i+1) + tweet)
 
-st.write(df)
+# st.write(df)
 
 
 sample_ids = [1,2,3,4,5]
@@ -48,7 +55,5 @@ sample_ids = [1,2,3,4,5]
 tweet_option = st.selectbox('Which tweet would you like to get information on?', sample_ids)
 n_opt = st.selectbox('How many similar tweets would you like to retrieve?', (1, 2, 3, 4, 5))
 st.write('Here are the top ' + str(n_opt) + ' tweets similar to this tweet:')
-for i in range(n_opt):
-    st.write(id_to_text[tweet_option][i])
-# After all tasks
-# del infersent.word_vec
+# for i in range(n_opt):
+#     st.write(id_to_text[tweet_option][i])
