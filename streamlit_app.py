@@ -218,6 +218,7 @@ infersent.load_w2v("https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/glove.pickl
 
 
 # Dashboard
+st.title("The Most Creative Title For This Project")
 st.write("NOT FINAL SUBMISSION | SHARING PIPELINE TEST ONLY")
 # Very very simple tweet scoring example
 tweet_1 = "Since the start of the pandemic, a total 65 WHO staff stationed in Geneva - working from home and onsite - have tested positive for #COVID19. We have not yet established whether any transmission has occurred on campus, but are looking into the matter."
@@ -229,10 +230,25 @@ st.write("Hypothesis tweet 1\n")
 st.write(tweet_2)
 st.write("Hypothesis tweet 2\n")
 st.write(tweet_3)
-st.write("The similarity score between premise and hypoetheis 1 is:")
+st.write("The similarity score between premise and hypothesis 1 is:")
 st.write(cosine(infersent.encode([text_prepare(tweet_1)]), infersent.encode([text_prepare(tweet_2)])).tolist()[0])
-st.write("The similarity score between premise and hypoetheis 2 is:")
+st.write("The similarity score between premise and hypothesis 2 is:")
 st.write(cosine(infersent.encode([text_prepare(tweet_1)]), infersent.encode([text_prepare(tweet_3)])).tolist()[0])
 
+id_to_text = {}
+sample_ids = [1322748291646476288, 1322748291751227397, 1322748291839262723, 1322748292384645120, 1322748296432144385, 1322748297736454144, 1322748298797682690, 1322748301842747392, 1322748304946614273, 1322748305898573825]
+for n in sample_ids:
+    optimal_tweets = []
+    for i in range(5):
+        # optimal_tweets.append(get_t_value(n, index)) # This can be a function.
+        optimal_tweets.append(str(n) + " has its text as number " + str(i+1))
+    id_to_text[n] = optimal_tweets
+metric_choices = [id_to_text[name_id] for name_id in sample_ids]
+
+tweet_option = st.selectbox('Which tweet would you like to get information on?', sample_ids)
+n_opt = st.selectbox('How many similar tweets would you like to retrieve?', (1, 2, 3, 4, 5))
+st.write('Here are the top ' + str(n_opt) + ' tweets similar to this tweet:')
+for i in range(n_opt):
+    st.write(id_to_text[tweet_option][i])
 # After all tasks
 # del infersent.word_vec
