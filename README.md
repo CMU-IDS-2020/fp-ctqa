@@ -18,15 +18,12 @@ Following TODO correpond to first deliverable
  - For sentence encoding/matching part
  - [x] Locally working example (for pretrained infersent) where vocab and model checkpoint can be downloaded
  - [x] Streamlit share working example (for pretrained infersent and five tweets scoring) where vocab and model checkpoint can be downloaded
- - [ ] From scoring to a matching problem
- - [ ] Simple user interface: click on one tweet, select top_n, cosine or nli score (future), etc
- - [ ] Training scripts for fine tuning infersent
-   - Finished training scripts (needs formatting)
-   - Need to find ways to transform load_weights method since it is different from the pretrained case (may not in this submission)
-   - Replace pretraining code to loading fine-tuned models code
+ - [x] From scoring to a matching problem
+ - [x] Simple user interface: click on one tweet, select top_n, cosine or nli score (future), etc
+ - [ ] Set up automated pipeline for training adjacency matrices (so that everyone can run)
    
-- For video submission
-- [ ] Answer the questions from professor feedback in proposal
+- For NER
+- [ ] 
 
 ## Deliverables
 
@@ -37,8 +34,8 @@ Following TODO correpond to first deliverable
 
 ### Design review
 
-- [ ] Develop a prototype of your project.
-- [ ] Create a 5 minute video to demonstrate your project and lists any question you have for the course staff. The contact should submit the video on Canvas.
+- [x] Develop a prototype of your project.
+- [x] Create a 5 minute video to demonstrate your project and lists any question you have for the course staff. The contact should submit the video on Canvas.
 
 ### Final deliverables
 
