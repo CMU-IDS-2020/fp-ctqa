@@ -1,4 +1,4 @@
-# CMU Interactive Data Science Final Project
+# CMU Interactive Data Science Final Project [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/cmu-ids-2020/fp-ctqa/main)
 
 * **Online URL**: https://share.streamlit.io/cmu-ids-2020/fp-ctqa/main
 * **Team members**:
