@@ -19,7 +19,7 @@ import io
 # nltk.download('punkt')
 # import warnings
 # warnings.filterwarnings("ignore")
-import spacy
+#import spacy
 import en_core_web_sm
 nlp = en_core_web_sm.load()
 st.title('Covid-19 Twitter Search')
