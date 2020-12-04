@@ -44,7 +44,7 @@ for i, tweet in enumerate([tweets[i] for i in indices]):
     st.write("[{}] ".format(i+1) + tweet)
 
 sentence_sets = []
-with open('ner_sets.pkl', 'rb') as f:
+with open('ners.pkl', 'rb') as f:
     sentence_sets = pickle.load(f)
 
 def get_top_n_idx(A, N):
@@ -55,10 +55,16 @@ def get_top_n_idx(A, N):
     return sorted_row_idx, best_scores
 
 
-def get_best_match_ner(question, n_opt):   
+def get_best_match_ner(question, n_opt):
+    def jaccard_overlap(question, sentence):
+        if len(question) is 0 or len(sentence) is 0:
+            return 1
+        intersection = len(question.intersection(sentence))
+        union = len(question.union(sentence))
+        return float(intersection)/float(union)   
     question = nlp(question)
     question_token_set = set([(X.text, X.ent_type_) for X in question])
-    index = [question.similarity(sentence_set) for sentence_set in sentence_sets]
+    index = [jaccard_overlap(question_token_set, sentence_set) for sentence_set in sentence_sets]
     return question_token_set, np.argpartition(index, -1 * n_opt)[-1 * n_opt:]
 
 sample_ids = [1,2,3,4,5]
@@ -84,10 +90,12 @@ for tweet_idx, score in zip(sorted_row_idx, best_scores):
     st.write(tweets[tweet_idx])
     st.write("with similarity score " + str(score))
     st.write("\n")
-    
 
+question = [tweets[i] for i in indices][tweet_option]    
+tokens, indices = get_best_match_ner(question, n_opt)
+st.write('Tokens of the example Tweet')
+st.write(tokens)
 st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this tweet BY NER tag similarity:')
-tokens, indices = get_best_match_ner(tweets[tweet_option], n_opt)
 for tweet_idx in indices:
     st.write(tweets[tweet_idx])
     st.write("\n")
