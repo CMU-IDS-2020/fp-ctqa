@@ -13,17 +13,11 @@ CTQA stands for Covid19 Twitter Question Answering
 ## Work distribution
 
 Following TODO correpond to first deliverable
+- [] Template for tuning epoch, batch size, and learning rate (2x2x2) on the UI side
+- [] Generate 8 adjacency matrices
+- [] Integrate to UI
 
 
- - For sentence encoding/matching part
- - [x] Locally working example (for pretrained infersent) where vocab and model checkpoint can be downloaded
- - [x] Streamlit share working example (for pretrained infersent and five tweets scoring) where vocab and model checkpoint can be downloaded
- - [x] From scoring to a matching problem
- - [x] Simple user interface: click on one tweet, select top_n, cosine or nli score (future), etc
- - [ ] Set up automated pipeline for training adjacency matrices (so that everyone can run)
-   
-- For NER
-- [ ] 
 
 ## Deliverables
 
