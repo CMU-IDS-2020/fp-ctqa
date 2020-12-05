@@ -40,7 +40,7 @@ num_tweets = len(tweets)
 random.seed(0)
 st.subheader("Here are some randomly selected most recent tweets about Covid-19")
 indices = random.sample(range(num_tweets), 5)
-
+st.write(indices)
 for i, tweet in enumerate([tweets[i] for i in indices]):
     st.write("[{}] ".format(i+1) + tweet)
 
@@ -63,10 +63,10 @@ def get_best_match_ner(question, n_opt):
         intersection = len(question.intersection(sentence))
         union = len(question.union(sentence))
         return float(intersection)/float(union)
-    question = nlp(question)
-    question_token_set = set([(X.text, X.ent_type_) for X in question])
+    question_doc = nlp(question)
+    question_token_set = set([(X.text, X.ent_type_) for X in question_doc])
     index = [jaccard_overlap(question_token_set, sentence_set) for sentence_set in sentence_sets]
-    return question_token_set, np.argpartition(index, -1 * n_opt)[-1 * n_opt:]
+    return question_doc, question_token_set, np.argpartition(index, -1 * n_opt)[-1 * n_opt:]
 
 sample_ids = [1,2,3,4,5]
 
@@ -93,10 +93,26 @@ for tweet_idx, score in zip(sorted_row_idx, best_scores):
     st.write("\n")
 
 question = [tweets[i] for i in indices][tweet_option]
-tokens, indices = get_best_match_ner(question, n_opt)
-st.write('Tokens of the example Tweet')
-st.write(tokens)
-st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this tweet BY NER tag similarity:')
-for tweet_idx in indices:
-    st.write(tweets[tweet_idx])
-    st.write("\n")
+doc, tokens, matches = get_best_match_ner(question, n_opt+1)
+st.write('Token Attributes')
+Attributes = st.multiselect('Select token attributes to display',[
+        "idx",
+        "text",
+        "lemma_",
+        "pos_",
+        "tag_",
+        "dep_",
+        "head",
+        "ent_type_",
+    ], ["text","ent_type_"])
+if st.button("Show token attributes"):
+    attrs = Attributes
+    data = [[str(getattr(token, attr)) for attr in attrs] for token in doc]
+    df = pd.DataFrame(data, columns=attrs)
+    st.dataframe(df)
+
+st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this tweet BY NER tag overlap:')
+for tweet_idx in matches:
+    if(tweet_idx != indices[tweet_option]):
+        st.write(tweets[tweet_idx])
+        st.write("\n")
