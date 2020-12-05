@@ -37,6 +37,7 @@ all_scores = load_marix('https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/data/a
 tweets = df.text.tolist()
 num_tweets = len(tweets)
 
+random.seed(0)
 st.subheader("Here are some randomly selected most recent tweets about Covid-19")
 indices = random.sample(range(num_tweets), 5)
 
