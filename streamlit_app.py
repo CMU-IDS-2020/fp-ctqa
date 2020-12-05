@@ -31,8 +31,8 @@ def load_marix(inp):
     all_scores = np.load(io.BytesIO(response.content))
     return all_scores
 
-df = pd_load("https://raw.githubusercontent.com/CMU-IDS-2020/fp-ctqa/main/tweets.csv")
-all_scores = load_marix('https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/adjacency_matrix.npy')
+df = pd_load("https://raw.githubusercontent.com/CMU-IDS-2020/fp-ctqa/main/data/tweets.csv")
+all_scores = load_marix('https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/data/adjacency_matrix.npy')
 
 tweets = df.text.tolist()
 num_tweets = len(tweets)
@@ -44,7 +44,7 @@ for i, tweet in enumerate([tweets[i] for i in indices]):
     st.write("[{}] ".format(i+1) + tweet)
 
 sentence_sets = []
-with open('ners.pkl', 'rb') as f:
+with open('data/ners.pkl', 'rb') as f:
     sentence_sets = pickle.load(f)
 
 def get_top_n_idx(A, N):
@@ -61,7 +61,7 @@ def get_best_match_ner(question, n_opt):
             return 1
         intersection = len(question.intersection(sentence))
         union = len(question.union(sentence))
-        return float(intersection)/float(union)   
+        return float(intersection)/float(union)
     question = nlp(question)
     question_token_set = set([(X.text, X.ent_type_) for X in question])
     index = [jaccard_overlap(question_token_set, sentence_set) for sentence_set in sentence_sets]
@@ -91,7 +91,7 @@ for tweet_idx, score in zip(sorted_row_idx, best_scores):
     st.write("with similarity score " + str(score))
     st.write("\n")
 
-question = [tweets[i] for i in indices][tweet_option]    
+question = [tweets[i] for i in indices][tweet_option]
 tokens, indices = get_best_match_ner(question, n_opt)
 st.write('Tokens of the example Tweet')
 st.write(tokens)
@@ -99,4 +99,3 @@ st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this twe
 for tweet_idx in indices:
     st.write(tweets[tweet_idx])
     st.write("\n")
-
