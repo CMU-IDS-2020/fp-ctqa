@@ -40,7 +40,6 @@ num_tweets = len(tweets)
 random.seed(0)
 st.subheader("Here are some randomly selected most recent tweets about Covid-19")
 indices = random.sample(range(num_tweets), 5)
-st.write(indices)
 for i, tweet in enumerate([tweets[i] for i in indices]):
     st.write("[{}] ".format(i+1) + tweet)
 
