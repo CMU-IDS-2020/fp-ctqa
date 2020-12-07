@@ -20,7 +20,11 @@ import io
 # import warnings
 # warnings.filterwarnings("ignore")
 import spacy
-nlp = spacy.load('en_core_web_sm')
+# nlp = spacy.load('en_core_web_sm')
+import en_core_web_sm
+nlp = en_core_web_sm.load()
+
+baserepo = "https://raw.githubusercontent.com/CMU-IDS-2020/fp-ctqa/main/data/"
 st.title('Covid-19 Twitter Search')
 def pd_load(inp):
     return pd.read_csv(inp)
@@ -31,8 +35,7 @@ def load_marix(inp):
     all_scores = np.load(io.BytesIO(response.content))
     return all_scores
 
-df = pd_load("https://raw.githubusercontent.com/CMU-IDS-2020/fp-ctqa/main/data/tweets.csv")
-all_scores = load_marix('https://github.com/CMU-IDS-2020/fp-ctqa/raw/main/data/adjacency_matrix.npy')
+df = pd_load(baserepo + "tweets.csv")
 
 tweets = df.text.tolist()
 num_tweets = len(tweets)
@@ -77,6 +80,15 @@ st.write("Here is the tweet you selected!")
 st.write([tweets[i] for i in indices][tweet_option])
 st.subheader("How many similar tweets would you like to retrieve?")
 n_opt = st.slider("", min_value=1, max_value=5, value=3, step=1)
+
+
+st.subheader("Now please select your hyperparameters")
+learning_rate = float(st.radio("Choose model learning rate", ('1e-5', '2e-5')))
+batch_size =int(st.radio("Choose model batch size", ('64', '32')))
+epochs =int(st.radio("Choose model number of training epochs", ('10', '5')))
+
+all_scores = load_marix(baserepo + "adjs/adj_" + str(batch_size) + "_" + str(learning_rate) + "-" + str(epochs) + ".npy")
+
 
 
 sorted_row_idx, best_scores = get_top_n_idx(all_scores[indices], n_opt)
