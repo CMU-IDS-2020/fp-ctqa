@@ -101,7 +101,7 @@ st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this twe
 
 for tweet_idx, score in zip(sorted_row_idx, best_scores):
     st.write(tweets[tweet_idx])
-    st.write("with similarity score " + str(score))
+    st.write("with similarity score " + str(1 + np.log(score)))
     st.write("\n")
 
 question = [tweets[i] for i in indices][tweet_option]
