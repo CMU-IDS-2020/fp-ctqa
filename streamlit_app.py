@@ -87,7 +87,7 @@ learning_rate = float(st.radio("Choose model learning rate", ('1e-5', '2e-5')))
 batch_size =int(st.radio("Choose model batch size", ('64', '32')))
 epochs =int(st.radio("Choose model number of training epochs", ('10', '5')))
 
-all_scores = load_marix(baserepo + "adjs/adj_" + str(batch_size) + "_" + str(learning_rate) + "-" + str(epochs) + ".npy")
+all_scores = load_marix(baserepo + "adjs/adj_" + str(batch_size) + "_" + str(learning_rate) + "_" + str(epochs) + ".npy")
 
 
 
