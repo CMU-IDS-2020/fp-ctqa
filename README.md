@@ -12,12 +12,6 @@ CTQA stands for Covid19 Twitter Question Answering
 
 ## Work distribution
 
-Following TODO correpond to first deliverable
-- [] Template for tuning epoch, batch size, and learning rate (2x2x2) on the UI side
-- [] Generate 8 adjacency matrices
-- [] Integrate to UI
-
-
 
 ## Deliverables
 
