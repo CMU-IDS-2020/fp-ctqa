@@ -88,7 +88,14 @@ st.header("Simple Explotory Data Analysis")
 st.subheader("Data Preprocessing and Distribution")
 st.info("In the first part of the EDA process, we are going to introduce our data source as well as \
         a simple analysis on the number of tweets per month. Our original dataset is obtained from \
-        [here](https://zenodo.org/record/3723940#.X7g-B1NKhZ1) etc...")
+        [here](https://zenodo.org/record/3723940#.X7g-B1NKhZ1). It is a twitter dataset of 200+ million tweets\
+        related to covid-19 topic generated from Jan.2020 to Dec 6, 2020. The original dataset captures all \
+        languages. We only focus on English tweets for this project. Due to the limitation of computation \
+        and the compatibility with Altair, we randomly sampled 1000 English tweets as our test dataset. \
+        The plots below display the process of the data cleaning and the distribution of the sampled tweets. ")
+
+st.image("pictures/data processing.png", width = 550, caption='Data Cleaning Process')
+
 date_plot = alt.Chart(df).mark_area().encode(
     alt.X("month:Q", title="Months", bin=False),
     y='count()',
@@ -172,7 +179,7 @@ if(any(dic)):
     plt.axis("off")
     st.pyplot(fig)
     if(show_chart):
-        st.altair_chart(basic_chart, use_container_width=True)
+        st.altair_chart(basic_chart, use_container_width=True, title="Word distribution")
 else:
     st.write("All words have been filtered out. Try removing Stopwords.")
 
