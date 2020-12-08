@@ -56,11 +56,21 @@ def get_best_match_ner(question, n_opt):
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Load data
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+baserepo = "https://raw.githubusercontent.com/CMU-IDS-2020/fp-ctqa/main/data/"
+df = pd_load(baserepo + "tweets.csv")
+tweets = df.text.tolist()
+num_tweets = len(tweets)
+indices = [316, 148, 646, 225, 305]
+df['month'] =  pd.to_datetime(df['created_at']).dt.month.astype("str")
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Introduction and data description
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 st.title('Covid-19 Twitter Search')
 st.header("Introduction")
-st.success("Since the outbreak of COVID-19 in early 2020, people have been searching frequently on social media platforms such as Twitter about health issues. \
+st.info("Since the outbreak of COVID-19 in early 2020, people have been searching frequently on social media platforms such as Twitter about health issues. \
            The vast amount of tweets has also made it difficult for people to quickly locate their content of interest. \
            Using Twitter hashtags alone to label tweets still leaves an enormous corpus. \
            In this situation, it is natural to ask the following question: how do we help people filter related tweets with more efficiency and flexibility?\n\
@@ -70,7 +80,16 @@ st.success("Since the outbreak of COVID-19 in early 2020, people have been searc
 
 st.header("Simple Explotory Data Analysis")
 st.subheader("Data Preprocessing and Distribution")
-st.success("[TODO - Yuanyuan] we can include the source of data, sample tweets, and a flow chart for data preprocessing")
+st.info("In the first part of the EDA process, we are going to introduce our data source as well as \
+        a simple analysis on the number of tweets per month. Our original dataset is obtained from \
+        [here](https://zenodo.org/record/3723940#.X7g-B1NKhZ1) etc...")
+date_plot = alt.Chart(df).mark_bar().encode(
+    alt.X("month:Q", title="Months", bin=True),
+    y='count()',
+    tooltip='count()'
+).interactive()
+st.altair_chart(date_plot, use_container_width=True)
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Word cloud
@@ -87,20 +106,23 @@ raw_dic = pd.Series(cloud_tweets.counts.values, index=cloud_tweets.term).to_dict
 # load interactivity elements
 st.cache(suppress_st_warning=True)
 st.subheader('Word Usage in #Covid-19 Tweets')
+st.info("In the second part of EDA process, our word cloud interaction will help you have better intuitive understanding of the dataset. \
+           You can modify the word cloud by choosing a threshold frequency , filtering out stopwords and lemmatizing the corpus. \
+            Finally a hidden bar graph provides a quantitave explanation of the frequency distribution of the word cloud.")
+
 color_func_twit = wordcloud.get_single_color_func("#00acee")
-st.sidebar.write("Choose Word Cloud Options")
-remove_eng = st.sidebar.checkbox("Remove English Stop Words")
-remove_esp = st.sidebar.checkbox("Remove Spanish Stop Words")
+st.write("Choose Word Cloud Options")
+remove_eng = st.checkbox("Remove English Stop Words")
+remove_esp = st.checkbox("Remove Spanish Stop Words")
 show_chart = st.button('Show Distribution')
 slider_ph = st.empty()
 value = slider_ph.slider("Choose Max Frequency", min_value=min_val,
                          max_value=5*min_val, value=2*min_val, step=10)
 
 # user text input
-custom = st.sidebar.text_input('Add Custom Stopwords (comma separated)')
+custom = st.text_input('Add Custom Stopwords (comma separated)')
 custom = custom.split(',')
-
-lemma = st.sidebar.checkbox("Lemmatize")
+lemma = st.checkbox("Lemmatize")
 
 # create stopwords list
 st.cache(suppress_st_warning=True)
@@ -112,14 +134,12 @@ if(remove_eng):
 if(remove_esp):
     stop_words += stopwords.words('spanish')
 
-
 # create chart
 st.cache(suppress_st_warning=True)
 basic_chart = alt.Chart(cloud_tweets[cloud_tweets['counts'] <= value]).mark_bar().encode(
     x=alt.X('index', title='Rank in Corpus'),
     y='counts'
 ).interactive()
-
 
 # create lemmatized dictionary
 st.cache(suppress_st_warning=True)
@@ -131,8 +151,8 @@ st.cache(suppress_st_warning=True)
 if(lemma):
     dic = {k: v for k, v in lemma_dic.items(
     ) if v <= value and k not in stop_words}
-    st.sidebar.write("Words will be Lemmatized")
-    st.sidebar.markdown("[More Info (External Link)](https://en.wikipedia.org/wiki/Lemmatisation)")
+    st.write("Words will be Lemmatized")
+    st.markdown("[More Info (External Link)](https://en.wikipedia.org/wiki/Lemmatisation)")
 
 else:
     dic = {k: v for k, v in raw_dic.items() if v <= value and k not in stop_words}
@@ -146,7 +166,7 @@ if(any(dic)):
     plt.axis("off")
     st.pyplot(fig)
     if(show_chart):
-        st.altair_chart(basic_chart)
+        st.altair_chart(basic_chart, use_container_width=True, title="Word distribution")
 else:
     st.write("All words have been filtered out. Try removing Stopwords.")
 
@@ -154,12 +174,6 @@ else:
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # User select tweets
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-baserepo = "https://raw.githubusercontent.com/CMU-IDS-2020/fp-ctqa/main/data/"
-df = pd_load(baserepo + "tweets.csv")
-tweets = df.text.tolist()
-num_tweets = len(tweets)
-indices = [316, 148, 646, 225, 305]
-
 st.subheader("Please select one recent tweet about Covid-19 and start your exploration")
 pics = {"[Tweet #1]": "pictures/1261978560249683969.png",
 "[Tweet #2]":"pictures/1249944985316794372.png",
@@ -174,20 +188,6 @@ tweet_option = int(pic[-2]) - 1
 st.subheader("How many similar tweets would you like to retrieve?")
 n_opt = st.slider("", min_value=2, max_value=6, value=3, step=1)
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# NER Model
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# st.sidebar.write("Model Explanations")
-# if st.sidebar.button("NER"):
-#     st.sidebar.write("Named Entity Recognition uses a small Convolutional Neural Network.")
-#     st.sidebar.write("It is trained on generic English web text and performs poorly on certain tweets")
-#     st.sidebar.write("Each document is broken down into Tokens with several [Attributes](https://spacy.io/api/token#attributes)")
-#     st.sidebar.markdown("Tweets are matched based on [Jaccard Overlap](https://news.developer.nvidia.com/similarity-in-graphs-jaccard-versus-the-overlap-coefficient/)")
-# if st.sidebar.button("Sentence Encoder"):
-#     st.sidebar.markdown("The Sentence Encoder uses Long-Term Short Term - a type of [Recurrent Neural Net designed for sequences](https://arxiv.org/pdf/1705.02364.pdf)")
-#     st.sidebar.write("It is trained on the Stanford Natural Language Inference Set")
-#     st.sidebar.write("This transfer learning method generalizes well to new sequences")
-
 sentence_sets = []
 with open('data/ners.pkl', 'rb') as f:
     sentence_sets = pickle.load(f)
@@ -197,15 +197,15 @@ doc, tokens, matches = get_best_match_ner(question, n_opt+1)
 
 
 st.header("Baseline Model - NER Model")
-st.success("Our baseline Named Entity Recognition model uses a small Convolutional Neural Network. \
+st.info("Our baseline Named Entity Recognition model uses a small Convolutional Neural Network. \
            It is trained on generic English web text and performs poorly on certain tweets. \
            Each document is broken down into Tokens with several [Attributes](https://spacy.io/api/token#attributes). \
            Tweets are matched based on [Jaccard Overlap](https://news.developer.nvidia.com/similarity-in-graphs-jaccard-versus-the-overlap-coefficient/). \
-           We also provided the users with some explorations on which token attributes contribute most to the similarity score.")
+           We also provided you with some explorations on which token attributes contribute most to the similarity score.")
 st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this tweet BY NER tag overlap:')
 for tweet_idx in matches:
     if(tweet_idx != indices[tweet_option]):
-        st.info(tweets[tweet_idx])
+        st.success(tweets[tweet_idx])
         st.write("\n")
 
 st.subheader("Which token attributes contribute most to the similarity score?")
@@ -232,7 +232,7 @@ if st.button("Show token attributes"):
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 st.header("Our Model - Setence Encoder Model")
-st.success("We use Facebook Infersent Natural Language Inference model to encode the the tweets to 4096-way vectors\
+st.info("We use Facebook Infersent Natural Language Inference model to encode the the tweets to 4096-way vectors\
             and then use vector level cosine similarity scoring to compute top-n similar tweets related to one tweet.\
             An overview of Natural Language Inference architre is as follows and you can find more [more details here](https://research.fb.com/wp-content/uploads/2017/09/emnlp2017.pdf). \
             We train the whole classification model end to end but only use the weights up to sentence encoder part to encode the tweets. \
@@ -253,8 +253,8 @@ st.subheader("Our Model - Sentence Encoder Model Result:")
 st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this tweet:')
 
 for tweet_idx, score in zip(sorted_row_idx, best_scores):
-    display_score = round(float(1 + np.log(score)), 5)
-    st.info(tweets[tweet_idx] + "\n\n [similarity score: " + str(display_score) + "]")
+    display_score = float(1 + np.log(score))
+    st.success(tweets[tweet_idx] + "\n\n [similarity score: " + str(display_score) + "]")
     st.write("\n")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
