@@ -35,8 +35,13 @@ def load_marix(inp):
     all_scores = np.load(io.BytesIO(response.content))
     return all_scores
 
+st.cache(suppress_st_warning=True)
 df = pd_load(baserepo + "tweets.csv")
+sentence_sets = []
+with open('data/ners.pkl', 'rb') as f:
+    sentence_sets = pickle.load(f)
 
+st.cache(suppress_st_warning=True)
 tweets = df.text.tolist()
 num_tweets = len(tweets)
 
@@ -57,9 +62,6 @@ indices = [316, 148, 646, 225, 305]
 #for i, tweet in enumerate([tweets[i] for i in indices]):
     #st.write("[{}] ".format(i+1) + tweet)
 
-sentence_sets = []
-with open('data/ners.pkl', 'rb') as f:
-    sentence_sets = pickle.load(f)
 
 def get_top_n_idx(A, N):
     N += 1 # not self
@@ -106,7 +108,7 @@ sorted_row_idx, best_scores = get_top_n_idx(all_scores[indices], n_opt)
 sorted_row_idx = sorted_row_idx[tweet_option].tolist()[::-1][1:]
 best_scores = best_scores[tweet_option].tolist()[::-1][1:]
 
-st.subheader("Our Model - Setence Encoder Model Result:")
+st.subheader("Our Model - Sentence Encoder Model Result:")
 st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this tweet:')
 
 for tweet_idx, score in zip(sorted_row_idx, best_scores):
@@ -117,14 +119,26 @@ for tweet_idx, score in zip(sorted_row_idx, best_scores):
 question = [tweets[i] for i in indices][tweet_option]
 doc, tokens, matches = get_best_match_ner(question, n_opt+1)
 
-st.subheader("Which token attributes contribute most to the similarity socre?")
+
+st.sidebar.write("Model Explanations")
+
+if st.sidebar.button("NER"):
+    st.sidebar.write("Named Entity Recognition uses a small Convolutional Neural Network")
+    st.sidebar.write("It is trained on generic English web text and performs poorly on certain tweets")
+    st.sidebar.write("Each document is broken down into Tokens with several [Attributes](https://spacy.io/api/token#attributes)")
+    st.sidebar.markdown("Tweets are matched based on [Jaccard Overlap](https://news.developer.nvidia.com/similarity-in-graphs-jaccard-versus-the-overlap-coefficient/)")
+if st.sidebar.button("Sentence Encoder"):
+    st.sidebar.markdown("The Sentence Encoder uses Long-Term Short Term - a type of [Recurrent Neural Net designed for sequences](https://arxiv.org/pdf/1705.02364.pdf)")
+    st.sidebar.write("It is trained on the Stanford Natural Language Inference Set")
+    st.sidebar.write("This transfer learning method generalizes well to new sequences")
+    
+st.subheader("What are the token attributes of the example tweet?")
 Attributes = st.multiselect('Select token attributes to display',[
         "idx",
         "text",
         "lemma_",
         "pos_",
         "tag_",
-        "dep_",
         "head",
         "ent_type_",
     ], ["text","ent_type_"])
