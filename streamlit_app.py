@@ -112,8 +112,8 @@ st.info("In the second part of EDA process, our word cloud interaction will help
 
 color_func_twit = wordcloud.get_single_color_func("#00acee")
 st.write("Choose Word Cloud Options")
-remove_eng = st.checkbox("Remove English Stop Words")
-remove_esp = st.checkbox("Remove Spanish Stop Words")
+remove_eng = st.checkbox("Remove Stop Words")
+# remove_esp = st.checkbox("Remove Spanish Stop Words")
 show_chart = st.button('Show Distribution')
 slider_ph = st.empty()
 value = slider_ph.slider("Choose Max Frequency", min_value=min_val,
@@ -131,8 +131,8 @@ if(custom):
     stop_words += custom
 if(remove_eng):
     stop_words += stopwords.words('english')
-if(remove_esp):
-    stop_words += stopwords.words('spanish')
+# if(remove_esp):
+#     stop_words += stopwords.words('spanish')
 
 # create chart
 st.cache(suppress_st_warning=True)
