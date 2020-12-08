@@ -41,11 +41,21 @@ tweets = df.text.tolist()
 num_tweets = len(tweets)
 
 random.seed(0)
-st.subheader("Here are some randomly selected most recent tweets about Covid-19")
+st.subheader("Here are some randomly selected recent tweets about Covid-19")
+
+pics = {"[Tweet #1]": "1261978560249683969.png",
+"[Tweet #2]":"1249944985316794372.png",
+"[Tweet #3]":"1295438615250472960.png",
+"[Tweet #4]":"1256772521774518273.png",
+"[Tweet #5]":"1260726271321018372.png"}
+
+pic = st.selectbox("Tweets choices", list(pics.keys()), 0)
+st.image(pics[pic], use_column_width=True, width = 600)
+
 # indices = random.sample(range(num_tweets), 5)
 indices = [316, 148, 646, 225, 305]
-for i, tweet in enumerate([tweets[i] for i in indices]):
-    st.write("[{}] ".format(i+1) + tweet)
+#for i, tweet in enumerate([tweets[i] for i in indices]):
+    #st.write("[{}] ".format(i+1) + tweet)
 
 sentence_sets = []
 with open('data/ners.pkl', 'rb') as f:
@@ -77,8 +87,8 @@ st.subheader("Which tweet would you like to get information on?")
 st.write("Please select the tweet id based on the number inside [] above")
 tweet_option = st.selectbox('', sample_ids)
 tweet_option -= 1
-st.write("Here is the tweet you selected!")
-st.write([tweets[i] for i in indices][tweet_option])
+#st.write("Here is the tweet you selected!")
+#st.write([tweets[i] for i in indices][tweet_option])
 st.subheader("How many similar tweets would you like to retrieve?")
 n_opt = st.slider("", min_value=1, max_value=5, value=3, step=1)
 
@@ -96,7 +106,7 @@ sorted_row_idx, best_scores = get_top_n_idx(all_scores[indices], n_opt)
 sorted_row_idx = sorted_row_idx[tweet_option].tolist()[::-1][1:]
 best_scores = best_scores[tweet_option].tolist()[::-1][1:]
 
-
+st.subheader("Our Model - Setence Encoder Model Result:")
 st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this tweet:')
 
 for tweet_idx, score in zip(sorted_row_idx, best_scores):
@@ -106,7 +116,8 @@ for tweet_idx, score in zip(sorted_row_idx, best_scores):
 
 question = [tweets[i] for i in indices][tweet_option]
 doc, tokens, matches = get_best_match_ner(question, n_opt+1)
-st.write('Token Attributes')
+
+st.subheader("Which token attributes contribute most to the similarity socre?")
 Attributes = st.multiselect('Select token attributes to display',[
         "idx",
         "text",
@@ -117,14 +128,18 @@ Attributes = st.multiselect('Select token attributes to display',[
         "head",
         "ent_type_",
     ], ["text","ent_type_"])
+st.write("Click the button to see the result")
 if st.button("Show token attributes"):
     attrs = Attributes
     data = [[str(getattr(token, attr)) for attr in attrs] for token in doc]
     df = pd.DataFrame(data, columns=attrs)
     st.dataframe(df)
 
+st.subheader("Baseline Model - NER Model Result:")
 st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this tweet BY NER tag overlap:')
 for tweet_idx in matches:
     if(tweet_idx != indices[tweet_option]):
         st.write(tweets[tweet_idx])
         st.write("\n")
+
+st.write("You can see our fine tuned model performs better than the NER baseline model because the output tweets are more similar")
