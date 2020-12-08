@@ -1,8 +1,4 @@
-# Following architecture file copied from InferSent source code for load pretraining model
-# In the later stage, this architecture will be modified to train a binary classifier (not 3 way softmax)
-# We use the original code first to make sure the inference pipeline is good
-# so that we don't have to worry about output capatibility when re-train this model with Quora
-
+import altair as alt
 import numpy as np
 import time
 import pandas as pd
@@ -16,6 +12,16 @@ import spacy
 # nlp = spacy.load('en_core_web_sm')
 import en_core_web_sm
 nlp = en_core_web_sm.load()
+
+# wordcloud imports
+import wordcloud
+import nltk
+from nltk.corpus import stopwords
+import matplotlib.pyplot as plt
+from nltk.stem.wordnet import WordNetLemmatizer
+
+nltk.download('wordnet')
+nltk.download('stopwords')
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Functions
@@ -63,12 +69,91 @@ st.success("Since the outbreak of COVID-19 in early 2020, people have been searc
            look at a few recent tweets, find the one they are more intersted in, and then dig into similar contents.")
 
 st.header("Simple Explotory Data Analysis")
+st.subheader("Data Preprocessing and Distribution")
 st.success("[TODO - Yuanyuan] we can include the source of data, sample tweets, and a flow chart for data preprocessing")
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Word cloud
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+st.cache(suppress_st_warning=True)
+cloud_tweets = pd_load(
+    "https://raw.githubusercontent.com/CMU-IDS-2020/a3-a3-formed-group/master/tweets/frequent_terms.csv").reset_index()
+min_val = int(cloud_tweets['counts'].min())
+st.cache(suppress_st_warning=True)
+cloud_tweets = cloud_tweets[cloud_tweets.counts <= 5*min_val]
+st.cache(suppress_st_warning=True)
+raw_dic = pd.Series(cloud_tweets.counts.values, index=cloud_tweets.term).to_dict()
 
-# # # # # # # # # # # # # # # #
+# load interactivity elements
+st.cache(suppress_st_warning=True)
+st.subheader('Word Usage in #Covid-19 Tweets')
+color_func_twit = wordcloud.get_single_color_func("#00acee")
+st.sidebar.write("Choose Word Cloud Options")
+remove_eng = st.sidebar.checkbox("Remove English Stop Words")
+remove_esp = st.sidebar.checkbox("Remove Spanish Stop Words")
+show_chart = st.button('Show Distribution')
+slider_ph = st.empty()
+value = slider_ph.slider("Choose Max Frequency", min_value=min_val,
+                         max_value=5*min_val, value=2*min_val, step=10)
+
+# user text input
+custom = st.sidebar.text_input('Add Custom Stopwords (comma separated)')
+custom = custom.split(',')
+
+lemma = st.sidebar.checkbox("Lemmatize")
+
+# create stopwords list
+st.cache(suppress_st_warning=True)
+stop_words = []
+if(custom):
+    stop_words += custom
+if(remove_eng):
+    stop_words += stopwords.words('english')
+if(remove_esp):
+    stop_words += stopwords.words('spanish')
+
+
+# create chart
+st.cache(suppress_st_warning=True)
+basic_chart = alt.Chart(cloud_tweets[cloud_tweets['counts'] <= value]).mark_bar().encode(
+    x=alt.X('index', title='Rank in Corpus'),
+    y='counts'
+).interactive()
+
+
+# create lemmatized dictionary
+st.cache(suppress_st_warning=True)
+lemmatizer = WordNetLemmatizer()
+lemma_dic = {lemmatizer.lemmatize(k.strip()): v for k, v in raw_dic.items()}
+
+# choose dictionary to generate wordcloud
+st.cache(suppress_st_warning=True)
+if(lemma):
+    dic = {k: v for k, v in lemma_dic.items(
+    ) if v <= value and k not in stop_words}
+    st.sidebar.write("Words will be Lemmatized")
+    st.sidebar.markdown("[More Info (External Link)](https://en.wikipedia.org/wiki/Lemmatisation)")
+
+else:
+    dic = {k: v for k, v in raw_dic.items() if v <= value and k not in stop_words}
+
+# create wordcloud
+st.cache(suppress_st_warning=True)
+if(any(dic)):
+    wc = wordcloud.WordCloud(color_func=color_func_twit).generate_from_frequencies(frequencies=dic)
+    fig = plt.figure()
+    plt.imshow(wc, interpolation='bilinear')
+    plt.axis("off")
+    st.pyplot(fig)
+    if(show_chart):
+        st.altair_chart(basic_chart)
+else:
+    st.write("All words have been filtered out. Try removing Stopwords.")
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # User select tweets
-# # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 baserepo = "https://raw.githubusercontent.com/CMU-IDS-2020/fp-ctqa/main/data/"
 df = pd_load(baserepo + "tweets.csv")
 tweets = df.text.tolist()
