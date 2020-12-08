@@ -255,8 +255,8 @@ st.info("We use Facebook Infersent Natural Language Inference model to encode th
 st.image("pictures/nli.png", width = 550, caption='Infersent Architecture')
 st.subheader("Now please select your hyperparameters")
 st.warning("During your tuning process, it would be interesting to think about the following questions: \n\
-           \n1. Which hyperparameter group produce the most convincing results? \n\
-           \n2. Which hyperparameter group produce the least convincing results? \n\
+           \n1. Which hyperparameter group produces the most convincing results? \n\
+           \n2. Which hyperparameter group produces the least convincing results? \n\
            \n3. Why certain hyperparameters gives extremely large scores and is this good?")
 
 learning_rate = float(st.radio("Choose Model Learning Rate", ('1e-5', '2e-5')))
@@ -279,4 +279,4 @@ for tweet_idx, score in zip(sorted_row_idx, best_scores):
 # Conclusions and future work
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 st.header("Conclusion and Analysis")
-st.write("You can see our fine tuned model performs better than the NER baseline model because the output tweets are more similar")
+st.write("While evaluation of similarity still has to be done through humans, one can see by looking at the results in this page that the NER baseline model has 13 out of 30 produced tweets that are actually similar to the base tweet. On the other hand, any combination of hyperparameters for our model will perform better than the NER baseline model, with the hyperparameter combination of learning rate 2E-5, batch size 64, and epoch count 5 displaying 23 out of 30 actually similar tweets.")
