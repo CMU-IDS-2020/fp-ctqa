@@ -26,6 +26,12 @@ nltk.download('stopwords')
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Functions
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+def load_time():
+    my_bar = st.progress(0)
+    for percent_complete in range(100):
+        time.sleep(0.01)
+        my_bar.progress(percent_complete + 1)
+
 def pd_load(inp):
     return pd.read_csv(inp)
 
@@ -63,7 +69,7 @@ df = pd_load(baserepo + "tweets.csv")
 tweets = df.text.tolist()
 num_tweets = len(tweets)
 indices = [316, 148, 646, 225, 305]
-df['month'] =  pd.to_datetime(df['created_at']).dt.month.astype("str")
+df['month'] =  pd.to_datetime(df['created_at']).dt.month.astype("int")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Introduction and data description
@@ -83,8 +89,8 @@ st.subheader("Data Preprocessing and Distribution")
 st.info("In the first part of the EDA process, we are going to introduce our data source as well as \
         a simple analysis on the number of tweets per month. Our original dataset is obtained from \
         [here](https://zenodo.org/record/3723940#.X7g-B1NKhZ1) etc...")
-date_plot = alt.Chart(df).mark_bar().encode(
-    alt.X("month:Q", title="Months", bin=True),
+date_plot = alt.Chart(df).mark_area().encode(
+    alt.X("month:Q", title="Months", bin=False),
     y='count()',
     tooltip='count()'
 ).interactive()
@@ -241,6 +247,11 @@ st.info("We use Facebook Infersent Natural Language Inference model to encode th
 
 st.image("pictures/nli.png", width = 550, caption='Infersent Architecture')
 st.subheader("Now please select your hyperparameters")
+st.warning("During your tuning process, it would be interesting to think about the following questions: \n\
+           \n1. Which hyperparameter group produce the most convincing results? \n\
+           \n2. Which hyperparameter group produce the least convincing results? \n\
+           \n3. Why certain hyperparameters gives extremely large scores and is this good?")
+
 learning_rate = float(st.radio("Choose Model Learning Rate", ('1e-5', '2e-5')))
 batch_size =int(st.radio("Choose Model Batch Size", ('64', '32')))
 epochs =int(st.radio("Choose Model Number of Training Epochs", ('10', '5')))
@@ -249,8 +260,8 @@ sorted_row_idx, best_scores = get_top_n_idx(all_scores[indices], n_opt)
 sorted_row_idx = sorted_row_idx[tweet_option].tolist()[::-1][1:]
 best_scores = best_scores[tweet_option].tolist()[::-1][1:]
 
-st.subheader("Our Model - Sentence Encoder Model Result:")
-st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to this tweet:')
+st.write('Here are the ordered top ' + str(n_opt) + ' tweets similar to your selected tweet:')
+# load_time()
 
 for tweet_idx, score in zip(sorted_row_idx, best_scores):
     display_score = float(1 + np.log(score))
