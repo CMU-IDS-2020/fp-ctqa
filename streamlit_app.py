@@ -254,7 +254,7 @@ st.warning("During your tuning process, it would be interesting to think about t
 
 learning_rate = float(st.radio("Choose Model Learning Rate", ('1e-5', '2e-5')))
 batch_size =int(st.radio("Choose Model Batch Size", ('64', '32')))
-epochs =int(st.radio("Choose Model Number of Training Epochs", ('10', '5')))
+epochs =int(st.radio("Choose Model Number of Training Epochs", ('5', '10')))
 all_scores = load_marix(baserepo + "adjs/adj_" + str(batch_size) + "_" + str(learning_rate) + "_" + str(epochs) + ".npy")
 sorted_row_idx, best_scores = get_top_n_idx(all_scores[indices], n_opt)
 sorted_row_idx = sorted_row_idx[tweet_option].tolist()[::-1][1:]
