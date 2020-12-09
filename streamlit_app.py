@@ -77,7 +77,7 @@ df['month'] =  pd.to_datetime(df['created_at']).dt.month.astype("int")
 st.title('Covid-19 Twitter Search')
 st.header("Introduction")
 st.info("Since the outbreak of COVID-19 in early 2020, people have been searching frequently on social media platforms such as Twitter about health issues. \
-           The vast amount of tweets has also made it difficult for people to quickly locate their content of interest. \
+           The vast amount of tweets have also made it difficult for people to quickly locate their content of interest. \
            Using Twitter hashtags alone to label tweets still leaves an enormous corpus. \
            In this situation, it is natural to ask the following question: how do we help people filter related tweets with more efficiency and flexibility?\n\
            \nWe want to approach this search problem from a different perspective: instead of performing search using keywords\
@@ -89,7 +89,7 @@ st.subheader("Data Preprocessing and Distribution")
 st.info("In the first part of the EDA process, we are going to introduce our data source as well as \
         a simple analysis on the number of tweets per month. Our original dataset is obtained from \
         [here](https://zenodo.org/record/3723940#.X7g-B1NKhZ1). It is a twitter dataset of 200+ million tweets\
-        related to covid-19 topic generated from Jan.2020 to Dec 6, 2020. The original dataset captures all \
+        related to COVID-19 topic generated from Jan.2020 to Dec 6, 2020. The original dataset captures all \
         languages. We only focus on English tweets for this project. Due to the limitation of computation \
         and the compatibility with Altair, we randomly sampled 1000 English tweets as our test dataset. \
         The plots below display the process of the data cleaning and the distribution of the sampled tweets. ")
