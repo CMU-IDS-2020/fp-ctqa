@@ -121,7 +121,7 @@ st.cache(suppress_st_warning=True)
 st.subheader('Word Usage in #Covid-19 Tweets')
 st.info("In the second part of EDA process, our word cloud interaction will help you have better intuitive understanding of the dataset. \
            You can modify the word cloud by choosing a threshold frequency , filtering out stopwords and lemmatizing the corpus. \
-            Finally a hidden bar graph provides a quantitave explanation of the frequency distribution of the word cloud.")
+            Finally a hidden bar graph provides a quantitative explanation of the frequency distribution of the word cloud.")
 
 color_func_twit = wordcloud.get_single_color_func("#00acee")
 st.write("Choose Word Cloud Options")
