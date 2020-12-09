@@ -94,7 +94,7 @@ st.info("In the first part of the EDA process, we are going to introduce our dat
         and the compatibility with Altair, we randomly sampled 1000 English tweets as our test dataset. \
         The plots below display the process of the data cleaning and the distribution of the sampled tweets. ")
 
-st.image("pictures/data processing.png", width = 550, caption='Data Cleaning Process')
+st.image("pictures/data prcessing.png", width = 725)
 
 date_plot = alt.Chart(df).mark_area().encode(
     alt.X("month:Q", title="Months", bin=False),
@@ -194,7 +194,7 @@ pics = {"[Tweet #1]": "pictures/1261978560249683969.png",
 "[Tweet #4]":"pictures/1256772521774518273.png",
 "[Tweet #5]":"pictures/1260726271321018372.png"}
 pic = st.selectbox("", list(pics.keys()), 0)
-st.image(pics[pic], use_column_width=True, width = 600)
+st.image(pics[pic], use_column_width=True, width = 650)
 
 sample_ids = [1,2,3,4,5]
 tweet_option = int(pic[-2]) - 1
