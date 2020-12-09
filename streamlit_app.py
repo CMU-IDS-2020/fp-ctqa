@@ -84,7 +84,7 @@ st.info("Since the outbreak of COVID-19 in early 2020, people have been searchin
            , we find it more natural for the users to have the following user story flow: \
            look at a few recent tweets, find the one they are more intersted in, and then dig into similar contents.")
 
-st.header("Simple Explotory Data Analysis")
+st.header("Simple Exploratory Data Analysis")
 st.subheader("Data Preprocessing and Distribution")
 st.info("In the first part of the EDA process, we are going to introduce our data source as well as \
         a simple analysis on the number of tweets per month. Our original dataset is obtained from \
