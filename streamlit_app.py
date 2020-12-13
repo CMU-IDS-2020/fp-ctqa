@@ -179,7 +179,7 @@ if(any(dic)):
     plt.axis("off")
     st.pyplot(fig)
     if(show_chart):
-        st.altair_chart(basic_chart, use_container_width=True, title="Word distribution")
+        st.altair_chart(basic_chart, use_container_width=True)
 else:
     st.write("All words have been filtered out. Try removing Stopwords.")
 
